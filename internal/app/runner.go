@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 	"io/fs"
 	"net"
+	"os"
 	goruntime "runtime"
 	"strings"
 	"time"
@@ -204,6 +205,7 @@ func Run(resources EmbeddedResources) error {
 
 	windowService.SetApp(app)
 	windowService.SetUpdater(updateManager)
+	startHiddenInTray := shouldStartHiddenInTray(os.Args[1:])
 
 	mainWindow = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Title:               appName,
@@ -214,7 +216,7 @@ func Run(resources EmbeddedResources) error {
 		DisableResize:       false,
 		Frameless:           goruntime.GOOS == "windows",
 		URL:                 "/",
-		Hidden:              false,
+		Hidden:              startHiddenInTray,
 		HideOnEscape:        false,
 		MinimiseButtonState: application.ButtonEnabled,
 		MaximiseButtonState: application.ButtonHidden,
@@ -350,6 +352,16 @@ func Run(resources EmbeddedResources) error {
 	refreshTray()
 
 	return app.Run()
+}
+
+func shouldStartHiddenInTray(args []string) bool {
+	for _, arg := range args {
+		switch strings.ToLower(strings.TrimSpace(arg)) {
+		case "--startup-tray", "--start-hidden", "--hidden", "--tray":
+			return true
+		}
+	}
+	return false
 }
 
 func browserReachableLoopbackBaseURL(listenAddr string) string {

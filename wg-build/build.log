@@ -1,0 +1,32 @@
+$ task build
+task: [clean:dist] mkdir -p "bin"
+task: [clean:dist] rm -f "bin/macos-arm64.dmg" "bin/macos-intel.dmg" "bin/windows-32.zip" "bin/windows-64.zip" "bin/linux-amd64.tar.gz"
+task: [clean:dist] rm -f "bin/macos-arm64" "bin/macos-intel" "bin/windows-32.exe" "bin/windows-64.exe" "bin/linux-amd64"
+task: [clean:dist] rm -f "bin/Cursor助手" "bin/Cursor助手.exe"
+task: [clean:dist] rm -rf "bin/macos-arm64.app" "bin/macos-intel.app" "bin/Cursor助手.app" "bin/Cursor助手.dev.app"
+task: [windows:common:go:mod:tidy] go mod tidy
+task: Task "windows:common:generate:icons" is up to date
+task: [windows:common:install:frontend:deps] yarn install --frozen-lockfile
+yarn install v1.22.22
+[1/4] Resolving packages...
+(node:10236) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+success Already up-to-date.
+Done in 0.17s.
+task: [windows:common:go:mod:tidy] go mod tidy
+task: Task "windows:common:generate:proto" is up to date
+task: Task "generate:bindings (BUILD_FLAGS=-tags production -trimpath -buildvcs=false -ldflags=\"-w -s -H windowsgui -X cursor/internal/buildinfo.Version=0.0.39\")" is up to date
+task: Task "build:frontend (DEV= SCAN=false)" is up to date
+task: [windows:generate:syso] wails3 generate syso -arch amd64 -icon windows/icon.ico -manifest windows/wails.exe.manifest -info windows/info.json -out ../wails_windows_amd64.syso
+task: [windows:build:native] go build -tags production -trimpath -buildvcs=false -ldflags="-w -s -H windowsgui -X cursor/internal/buildinfo.Version=0.0.39" -o "bin/windows-64.exe"
+task: [windows:build:native] powershell Remove-item *.syso
+task: [windows:create:zip] rm -rf "bin/.zip-amd64"
+task: [windows:create:zip] mkdir -p "bin/.zip-amd64"
+task: [windows:create:zip] cp "bin/windows-64.exe" "bin/.zip-amd64/"
+task: [windows:create:zip] (cd "bin/.zip-amd64" && zip -qry "../windows-64.zip" .)
+"zip": executable file not found in $PATH
+task: Failed to run task "build": task: Failed to run task "build:current": task: Failed to run task "build:windows:current": task: Failed to run task "windows:create:zip": exit status 127
+
+WARNING: task build 未完成 ZIP 阶段，但 Windows exe 已生成，继续复制 exe 到 release。
+
+完成：E:\AI\cursor-byok\release\cursor-byok.exe
